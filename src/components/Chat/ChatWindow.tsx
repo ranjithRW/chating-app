@@ -18,6 +18,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, chatId, cha
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null); // Add ref for input element
 
   useEffect(() => {
     if (!chatId) return;
@@ -77,6 +78,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, chatId, cha
       console.error('Error sending message:', error);
     } finally {
       setLoading(false);
+      // Focus the input after sending message
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -185,12 +190,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, chatId, cha
           
           <div className="flex-1 relative">
             <input
+              ref={inputRef} // Add ref to input
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
               className="w-full px-4 py-3 pr-12 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-colors"
               disabled={loading}
+              autoFocus // Auto focus on component mount
             />
             <button
               type="button"
