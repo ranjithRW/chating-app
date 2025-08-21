@@ -65,9 +65,11 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   };
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
+    // Changed: Removed fixed width (`w-80`) and responsive breakpoint (`sm:flex-col`).
+    // The parent now controls the width (`w-full md:w-80`).
+    <div className="w-full bg-white border-r border-gray-200 flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 bg-gray-50 border-b border-gray-200">
+      <div className="p-4 bg-gray-50 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -140,8 +142,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 key={chat.id}
                 onClick={() => onChatSelect(chat.id)}
                 className={`p-3 rounded-lg cursor-pointer transition-colors ${selectedChatId === chat.id
-                    ? 'bg-green-50 border-l-4 border-green-500'
-                    : 'hover:bg-gray-50'
+                  ? 'bg-green-50 border-l-4 border-green-500'
+                  : 'hover:bg-gray-50'
                   }`}
               >
                 <div className="flex items-center space-x-3">

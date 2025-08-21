@@ -2,16 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { collection, query, orderBy, onSnapshot, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { Message, User as UserType, Chat } from '../../types';
-import { Send, Smile, Paperclip, MoreVertical } from 'lucide-react';
+// Added ArrowLeft for the new back button
+import { Send, Smile, Paperclip, MoreVertical, ArrowLeft } from 'lucide-react'; 
 import { format } from 'date-fns';
 
 interface ChatWindowProps {
   currentUser: UserType;
   chatId: string;
   chat: Chat;
+  onBack: () => void; // <-- 1. Add the onBack prop to the interface
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, chatId, chat }) => {
+export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, chatId, chat, onBack }) => { // <-- 2. Destructure onBack from props
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +26,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, chatId, cha
       collection(db, 'chats', chatId, 'messages'),
       orderBy('timestamp', 'asc')
     );
-    console.log("Chat ID:", q);
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const messageData = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -54,11 +55,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, chatId, cha
     const messageText = newMessage.trim();
     setNewMessage('');
 
-    // --- START OF DEBUGGING ---
-    console.log("Attempting to send message...");
-    console.log("Current User UID:", currentUser.uid);
-    console.log("Chat ID:", chatId);
-
     try {
       const messageData = {
         text: messageText,
@@ -69,23 +65,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, chatId, cha
         type: 'text',
         status: 'sent'
       };
-      console.log("1. Message data prepared:", messageData);
 
-      // Add message to chat's messages subcollection
-      const messageRef = await addDoc(collection(db, 'chats', chatId, 'messages'), messageData);
-      console.log("2. Successfully added message to subcollection with ID:", messageRef.id);
+      await addDoc(collection(db, 'chats', chatId, 'messages'), messageData);
 
-      // Update chat's last message
       await updateDoc(doc(db, 'chats', chatId), {
         lastMessage: messageData,
         lastMessageTimestamp: new Date()
       });
-      console.log("3. Successfully updated parent chat document's lastMessage.");
-      // --- END OF DEBUGGING ---
 
     } catch (error) {
-      // This will catch any errors, especially permission errors from Firestore rules
-      console.error('!!! ERROR SENDING MESSAGE !!!:', error);
+      console.error('Error sending message:', error);
     } finally {
       setLoading(false);
     }
@@ -109,18 +98,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, chatId, cha
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    <div className="flex-1 flex flex-col h-full bg-white">
       {/* Chat Header */}
       <div className="bg-gray-50 border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+          <div className="flex items-center space-x-2"> {/* Reduced space-x for better fit */}
+            {/* 3. Add the Back Button for Mobile */}
+            <button
+              onClick={onBack}
+              className="p-2 -ml-2 hover:bg-gray-200 rounded-full transition-colors md:hidden"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-gray-600 font-medium">
                 {getOtherParticipantName().charAt(0).toUpperCase()}
               </span>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">{getOtherParticipantName()}</h3>
+              <h3 className="font-semibold text-gray-900 truncate">{getOtherParticipantName()}</h3>
               <p className="text-sm text-gray-500">Online</p>
             </div>
           </div>
