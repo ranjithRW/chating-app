@@ -32,10 +32,20 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const chatData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Chat[];
+      const chatData = snapshot.docs.map(doc => {
+        const data = doc.data();
+
+        return {
+          id: doc.id,
+          ...data,
+          // ✅ Convert Firestore Timestamp to JS Date (or null if missing)
+          lastMessageTimestamp: data.lastMessageTimestamp
+            ? (data.lastMessageTimestamp.toDate
+              ? data.lastMessageTimestamp.toDate()
+              : new Date(data.lastMessageTimestamp))
+            : null,
+        } as Chat;
+      });
 
       setChats(chatData);
     });
@@ -44,11 +54,16 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   }, [currentUser]);
 
   const filteredChats = chats.filter(chat => {
-    const chatName = chat.name || chat.participantNames[
-      Object.keys(chat.participantNames).find(id => id !== currentUser.uid) || ''
-    ] || 'Unknown';
+    const chatName =
+      chat.name ||
+      chat.participantNames[
+        Object.keys(chat.participantNames).find(id => id !== currentUser.uid) || ''
+      ] ||
+      'Unknown';
+
     return chatName.toLowerCase().includes(searchQuery.toLowerCase());
   });
+
   const getOtherParticipantName = (chat: Chat): string => {
     if (chat.type === 'group') return chat.name ?? 'Unknown';
 
@@ -58,15 +73,16 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     return chat.participantNames?.[otherUserId] ?? 'Unknown';
   };
 
-
-  const formatLastMessageTime = (timestamp?: Date) => {
+  const formatLastMessageTime = (timestamp?: Date | null) => {
     if (!timestamp) return '';
-    return format(new Date(timestamp), 'HH:mm');
+    try {
+      return format(timestamp, 'HH:mm');
+    } catch {
+      return '';
+    }
   };
 
   return (
-    // Changed: Removed fixed width (`w-80`) and responsive breakpoint (`sm:flex-col`).
-    // The parent now controls the width (`w-full md:w-80`).
     <div className="w-full bg-white border-r border-gray-200 flex flex-col h-full">
       {/* Header */}
       <div className="p-4 bg-gray-50 border-b border-gray-200 flex-shrink-0">
@@ -76,7 +92,9 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
               <MessageCircle className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <h2 className="font-semibold text-gray-900">{currentUser.displayName || 'You'}</h2>
+              <h2 className="font-semibold text-gray-900">
+                {currentUser.displayName || 'You'}
+              </h2>
               <p className="text-sm text-gray-500">Online</p>
             </div>
           </div>
@@ -141,10 +159,11 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
               <div
                 key={chat.id}
                 onClick={() => onChatSelect(chat.id)}
-                className={`p-3 rounded-lg cursor-pointer transition-colors ${selectedChatId === chat.id
-                  ? 'bg-green-50 border-l-4 border-green-500'
-                  : 'hover:bg-gray-50'
-                  }`}
+                className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                  selectedChatId === chat.id
+                    ? 'bg-green-50 border-l-4 border-green-500'
+                    : 'hover:bg-gray-50'
+                }`}
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
