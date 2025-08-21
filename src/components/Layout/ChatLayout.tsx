@@ -91,8 +91,9 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({ currentUser, onLogout })
         ) : (
           <div className="flex-1 flex items-center justify-center bg-white">
             <div className="text-center p-4"> {/* Added padding for small screens */}
-              <div className="w-32 h-32 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <MessageCircle className="w-16 h-16 text-green-600" />
+              <div className="w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-6">
+                {/* <MessageCircle className="w-16 h-16 text-green-600" /> */}
+                <img src='/pp.webp' alt="Logo" className="w-16 h-16 rounded-full" />
               </div>
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">
                 Welcome to ChatApp
