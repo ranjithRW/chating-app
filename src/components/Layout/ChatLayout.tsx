@@ -66,13 +66,13 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({ currentUser, onLogout })
           onLogout={onLogout}
         />
       </div>
-      
+
       {/* 
         Responsive Main Content Container (Chat Window or Welcome Screen)
         - On mobile: Only visible when a chat is selected.
         - On desktop (`md:`): Always visible.
       */}
-      <div 
+      <div
         className={`
           ${selectedChatId ? 'flex' : 'hidden md:flex'}
           flex-1 flex flex-col
@@ -119,7 +119,15 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({ currentUser, onLogout })
       {!selectedChatId && (
         <button
           onClick={() => setShowNewChatModal(true)}
-          className="fixed bottom-6 right-6 md:hidden w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 z-20"
+          className="fixed bottom-6 right-6 md:hidden w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 z-50"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      )}
+      {selectedChatId && (
+        <button
+          onClick={() => setShowNewChatModal(true)}
+          className="hidden md:flex fixed bottom-6 left-6 w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 z-50"
         >
           <Plus className="w-6 h-6" />
         </button>
